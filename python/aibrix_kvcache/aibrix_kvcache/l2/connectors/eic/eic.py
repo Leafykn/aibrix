@@ -2,8 +2,10 @@ import hashlib
 import os
 import random
 import string
+import time
 from concurrent.futures import Executor
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, List, Sequence, Tuple
 
 import eic
@@ -82,10 +84,15 @@ class EICConnector(Connector[bytes, torch.Tensor], AsyncBase):
                 random.choices(string.ascii_uppercase + string.digits, k=N)
             )
 
+        start_time = time.perf_counter_ns()
         for i in range(2048):
             key = random_string(30)
             self.exists_sync(key)
-        logger.info("init eic client, prebuilt connection finish")
+        end_time = time.perf_counter_ns()
+        elapsed_time_us = (end_time - start_time) / 1000
+        logger.info(
+            f"init eic client, prebuilt connection finish - total time: {elapsed_time_us:.2f} us"
+        )
 
     @classmethod
     @classmethod
@@ -153,12 +160,21 @@ class EICConnector(Connector[bytes, torch.Tensor], AsyncBase):
         meminfo = eic.MemoryInfo()
         meminfo.type = eic.MemoryType.MEMORY_CUDA
         meminfo.cuda_id = 0
+
+        # Calculate total size and log registration info
+        total_size = 0
         for slab in slabs:
             addr = slab.data_ptr()
             length = slab.numel()
+            total_size += length
             vals.append(addr, length, True)
+
         succss = self.conn.register_memory(vals, meminfo)
         if succss:
+            registration_time = datetime.now()
+            logger.info(
+                f"registering slabs - total size: {total_size}, registration time: {registration_time}"
+            )
             logger.info("register mixed memory pin buffer success")
         else:
             logger.error("fail to register mixed memory pin buffer")
