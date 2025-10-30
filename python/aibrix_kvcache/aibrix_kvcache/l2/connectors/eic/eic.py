@@ -10,12 +10,12 @@ import eic
 import torch
 import yaml
 
-from ... import envs
-from ...common import AsyncBase
-from ...common.absl_logging import getLogger
-from ...memory import MemoryRegion
-from ...status import Status, StatusCodes
-from . import Connector, ConnectorFeature
+from .... import envs
+from ....common import AsyncBase
+from ....common.absl_logging import getLogger
+from ....memory import MemoryRegion
+from ....status import Status, StatusCodes
+from .. import Connector, ConnectorFeature
 
 logger = getLogger(__name__)
 
