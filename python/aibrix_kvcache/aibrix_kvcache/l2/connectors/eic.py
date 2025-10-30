@@ -157,7 +157,6 @@ class EICConnector(Connector[bytes, torch.Tensor], AsyncBase):
             addr = slab.data_ptr()
             length = slab.numel()
             vals.append(addr, length, True)
-            logger.debug(f"regist addr={addr}, lenght={length}")
         succss = self.conn.register_memory(vals, meminfo)
         if succss:
             logger.info("register mixed memory pin buffer success")
@@ -175,7 +174,6 @@ class EICConnector(Connector[bytes, torch.Tensor], AsyncBase):
         return Status[Any](StatusCodes.NOT_FOUND)
 
     def exists_sync(self, key_str: str) -> bool:
-        logger.debug(f"eic exists {key_str}")
         keys = eic.StringVector()
         keys.append(key_str)
         exist_option = eic.ExistOption()
@@ -317,4 +315,3 @@ def _make_dir(path: str):
         logger.info(f"create dir '{path}' success")
     except OSError as e:
         logger.info(f"create dir '{path}' error {e}")
-        # exit(1)
